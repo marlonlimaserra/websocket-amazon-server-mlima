@@ -3,6 +3,9 @@ const {aws4Interceptor} = require('aws4-axios');
  
 const server = ((conf) => {
 
+    if(conf === undefined){  console.error('conf não foi informada.'); return false;  }
+    if(typeof conf !== "object"){  console.error('conf não é objeto.'); return false;  }
+
     if(conf.url === undefined){ console.error('url não foi informada.'); return false; }
     if(typeof conf.url !== "string"){ console.error('url é inválida.'); return false; }
 
