@@ -1,6 +1,7 @@
 const axios = require('axios');
 const {aws4Interceptor} = require('aws4-axios');
- 
+//const {MongoClient} = require('mongodb');
+
 const server = ((conf) => {
 
     if(conf === undefined){  console.error('conf não foi informada.'); return false;  }
@@ -47,11 +48,13 @@ const server = ((conf) => {
         if(typeof message !== "object"){ console.error('message não é objeto.'); return false; }
 
         var url = conf.url+'/@connections/'+socket;
-        await client.post(url,JSON.stringify([type,message])).then((res) => {
+        var data = await client.post(url,JSON.stringify([type,message])).then((res) => {
              
-            return res.data;
+            //res.data.success = true;
+            return {success:true};
 
-        }).catch((error) => { console.error(error,url); return false; });
+        }).catch((error) => { return error;  });
+        return data;
         
     });
 
@@ -62,13 +65,40 @@ const server = ((conf) => {
         if(socket === ""){ console.error('socket não pode ficar em branco.'); return false; }
 
         var url = conf.url+'/@connections/'+socket;
-        await client.delete(url,JSON.stringify([type,message])).then((res) => {
-             
+        var data = await client.delete(url,JSON.stringify([type,message])).then((res) => {
+            
+            res.data.success = true;
             return res.data;
 
-        }).catch((error) => { console.error(error,url); return false; });
+        }).catch((error) => { error.status = false; return error; });
+        return data;
 
     });
+
+    /*if(conf.enableMongo === true){
+
+        const mongoclient = new MongoClient(conf.mongo.url);
+        var mongo = await mongoclient.connect().then((data) => {
+
+            console.log('Mongo cliente conectado - mlima');
+            return true;
+
+        }).catch((data) => {
+ 
+            console.error('Mongo erro',data);
+            return false;
+
+        });
+
+        if(mongo === true){
+
+            const dbmongo = mongoclient.db(conf.mongo.db);
+            obj.dbmongo = dbmongo.addUser;
+            obj.collection = dbmongo.collection(conf.mongo.collection);
+
+        }   
+
+    }*/
 
     return obj;
 
